@@ -30,9 +30,9 @@ class ClientTests(TestCase):
         client = Client.objects.create(client_name='Test Client', created_by=self.user)
         response = self.client.put(
             f'/api/clients/{client.id}/', 
-            {'client_name': 'Updated Client'}  # Only include fields that are writable
+            {'client_name': 'Updated Client'} 
         )
-        print(response.data)  # Print response data to see any validation errors
+        print(response.data)  
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 

@@ -23,8 +23,8 @@ def home(request):
     return HttpResponse("Welcome to the API!")
 
 urlpatterns = [
-    path('', home, name='home'),  # Root URL
-    path('api/', include('api.urls')),  # Adjusted path to use 'api/' only
+    path('', home, name='home'),  
+    path('api/', include('api.urls')),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
     path('admin/', admin.site.urls),
 ]

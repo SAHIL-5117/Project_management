@@ -23,16 +23,7 @@ class ClientRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 # Projects
-class ProjectCreateView(generics.CreateAPIView):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        # Automatically set the `created_by` field to the currently authenticated user
-        serializer.save(created_by=self.request.user)
-
-class ProjectListView(generics.ListAPIView):
+class ProjectListCreateDeleteView(generics.GenericAPIView):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
@@ -40,7 +31,32 @@ class ProjectListView(generics.ListAPIView):
         # Filter projects by the logged-in user
         return Project.objects.filter(users=self.request.user)
 
-class ProjectDeleteView(generics.DestroyAPIView):
+    def get(self, request, *args, **kwargs):
+        # Handle GET request
+        projects = self.get_queryset()
+        serializer = self.serializer_class(projects, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        # Handle POST request
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save(created_by=self.request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        # Handle DELETE request
+        try:
+            project_id = request.data.get('id')
+            project = get_object_or_404(Project, id=project_id)
+            self.check_object_permissions(request, project)
+            project.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except NotFound:
+            return Response({"detail": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class ProjectRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
